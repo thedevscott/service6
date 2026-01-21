@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 // Handler represents a function that handles a http request within our own
@@ -39,8 +42,14 @@ func (a *App) HandleFunc(pattern string, handler Handler, mw ...MidHandler) {
 
 	h := func(w http.ResponseWriter, r *http.Request) {
 
-		if err := handler(r.Context(), w, r); err != nil {
-			// TODO: Error handling
+		v := Values{
+			TraceID: uuid.NewString(),
+			Now:     time.Now(),
+		}
+
+		ctx := setValues(r.Context(), &v)
+
+		if err := handler(ctx, w, r); err != nil {
 			fmt.Println(err)
 			return
 		}
